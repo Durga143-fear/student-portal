@@ -1,0 +1,10 @@
+{
+  "name": "student-connect-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static student signup and login portal with Supabase Auth support.",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js"
+  }
+}

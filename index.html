@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Signup Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="hero-panel" aria-label="Student portal overview">
+        <div class="brand-row">
+          <div class="brand-mark">SC</div>
+          <span>Student Connect</span>
+        </div>
+
+        <div class="hero-copy">
+          <p class="eyebrow">Student portal</p>
+          <h1>Secure access for every student.</h1>
+          <p>
+            Create an account, login from anywhere, and manage a simple
+            student dashboard powered by hosted authentication.
+          </p>
+        </div>
+
+        <div class="stats-grid" aria-label="Student highlights">
+          <div>
+            <span>Access</span>
+            <strong>Public signup</strong>
+          </div>
+          <div>
+            <span>Security</span>
+            <strong>Email auth</strong>
+          </div>
+          <div>
+            <span>Status</span>
+            <strong id="authBadge">Loading</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="auth-panel" aria-live="polite">
+        <div class="card-top">
+          <div>
+            <p class="eyebrow" id="modeLabel">Create account</p>
+            <h2 id="formTitle">Student Signup</h2>
+          </div>
+          <button class="mode-chip" id="modeToggle" type="button">Login</button>
+        </div>
+
+        <div class="notice" id="authNotice">
+          <strong>Public student access.</strong>
+          Any student can create an account using email and password.
+        </div>
+
+        <form id="studentForm" novalidate>
+          <div class="signup-fields">
+            <label>
+              Full name
+              <input
+                id="name"
+                name="name"
+                type="text"
+                autocomplete="name"
+                placeholder="Enter full name"
+              />
+            </label>
+
+            <label>
+              Roll number
+              <input
+                id="roll"
+                name="roll"
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="Enter roll number"
+              />
+            </label>
+
+            <label>
+              Course
+              <input
+                id="course"
+                name="course"
+                type="text"
+                autocomplete="organization-title"
+                placeholder="BSc Computer Science"
+              />
+            </label>
+          </div>
+
+          <label>
+            Email address
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="student@example.com"
+              required
+            />
+          </label>
+
+          <label>
+            Password
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Create or enter password"
+              required
+            />
+          </label>
+
+          <div class="form-tools">
+            <label class="remember-row">
+              <input id="remember" type="checkbox" checked />
+              Keep me signed in
+            </label>
+            <button class="link-button" id="forgotPassword" type="button" hidden>
+              Forgot password?
+            </button>
+          </div>
+
+          <p class="message" id="message" role="alert"></p>
+
+          <button class="primary-button" id="submitButton" type="submit">
+            Create verified account
+          </button>
+        </form>
+      </section>
+
+      <section class="dashboard-panel" id="dashboard">
+        <div class="dashboard-header">
+          <div>
+            <p class="eyebrow">Student dashboard</p>
+            <h2>Welcome, <span id="studentName">Student</span></h2>
+          </div>
+          <button class="mode-chip" id="logoutButton" type="button">Logout</button>
+        </div>
+
+        <div class="profile-card">
+          <div class="avatar" id="avatar">ST</div>
+          <div>
+            <h3 id="profileName">Student</h3>
+            <p id="profileEmail">student@example.com</p>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div>
+            <span>Roll number</span>
+            <strong id="profileRoll">Not added</strong>
+          </div>
+          <div>
+            <span>Course</span>
+            <strong id="profileCourse">B.Sc Computer Science</strong>
+          </div>
+          <div>
+            <span>Account status</span>
+            <strong class="success">Active</strong>
+          </div>
+          <div>
+            <span>Next step</span>
+            <strong>Profile active</strong>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
