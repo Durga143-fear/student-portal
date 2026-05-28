@@ -1,5 +1,6 @@
 import { authConfig } from "./auth-config.js";
 
+function startStudentPortal() {
 const form = document.querySelector("#studentForm");
 const modeLabel = document.querySelector("#modeLabel");
 const formTitle = document.querySelector("#formTitle");
@@ -11,6 +12,23 @@ const logoutButton = document.querySelector("#logoutButton");
 const notice = document.querySelector("#authNotice");
 const authBadge = document.querySelector("#authBadge");
 const forgotPassword = document.querySelector("#forgotPassword");
+
+if (
+  !form ||
+  !modeLabel ||
+  !formTitle ||
+  !modeToggle ||
+  !submitButton ||
+  !message ||
+  !signupFields ||
+  !logoutButton ||
+  !notice ||
+  !authBadge ||
+  !forgotPassword
+) {
+  console.error("Student portal markup is missing one or more required elements.");
+  return;
+}
 
 const DEMO_USERS_KEY = "student_connect_demo_users";
 const DEMO_SESSION_KEY = "student_connect_demo_session";
@@ -413,3 +431,12 @@ async function init() {
 }
 
 init();
+}
+
+if (typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startStudentPortal);
+  } else {
+    startStudentPortal();
+  }
+}

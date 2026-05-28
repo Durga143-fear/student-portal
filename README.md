@@ -5,12 +5,12 @@ Static student signup and login website with Supabase Auth support.
 ## Local Preview
 
 ```bash
-npm start
+npx serve . --listen 5180
 ```
 
 Open `http://localhost:5180`.
 
-The app is now configured for Supabase. If the Supabase keys are removed, it falls back to local preview mode so the UI can still be tested on this computer.
+The app is a frontend-only static site configured for Supabase. If the Supabase keys are removed, it falls back to local preview mode so the UI can still be tested on this computer.
 
 ## Enable Supabase Auth
 
@@ -54,7 +54,11 @@ Upload this folder or connect it to a GitHub repo. The included `netlify.toml` p
 
 ### Vercel
 
-Import the folder or GitHub repo. No build command is required.
+Import the folder or GitHub repo and use these settings:
+
+- Framework Preset: Other
+- Build Command: `npm run build`
+- Output Directory: `.`
 
 ### Firebase Hosting
 

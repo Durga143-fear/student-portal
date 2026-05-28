@@ -4,7 +4,6 @@
   "private": true,
   "description": "Static student signup and login portal with Supabase Auth support.",
   "scripts": {
-    "start": "node server.js",
-    "serve": "node server.js"
+    "build": "node -e \"console.log('Static frontend ready for deployment')\""
   }
 }
