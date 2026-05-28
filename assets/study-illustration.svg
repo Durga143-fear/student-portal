@@ -1,0 +1,15 @@
+<svg width="420" height="300" viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Student study dashboard illustration">
+  <rect x="32" y="42" width="356" height="216" rx="18" fill="#F8FAFC" stroke="#D8E0EC" stroke-width="2"/>
+  <rect x="58" y="72" width="138" height="156" rx="12" fill="#E9F5F2"/>
+  <rect x="224" y="72" width="108" height="24" rx="8" fill="#DDE8FF"/>
+  <rect x="224" y="112" width="138" height="16" rx="8" fill="#FDEBD3"/>
+  <rect x="224" y="142" width="118" height="16" rx="8" fill="#E8E1FF"/>
+  <rect x="224" y="172" width="132" height="16" rx="8" fill="#DDF7EC"/>
+  <rect x="224" y="202" width="84" height="16" rx="8" fill="#FFE0E5"/>
+  <circle cx="126" cy="128" r="38" fill="#2563EB"/>
+  <path d="M105 130L120 145L149 108" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M78 198C98 174 153 174 174 198" stroke="#132238" stroke-width="10" stroke-linecap="round"/>
+  <path d="M82 229H169" stroke="#14B8A6" stroke-width="9" stroke-linecap="round"/>
+  <path d="M35 260H384" stroke="#BBC6D6" stroke-width="4" stroke-linecap="round"/>
+  <path d="M307 42L325 20L340 42" stroke="#F97316" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

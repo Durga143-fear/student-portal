@@ -3,180 +3,351 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Student Signup Portal</title>
+    <meta
+      name="description"
+      content="A Supabase-powered student habit tracker calendar with streaks, analytics, templates, and backup tools."
+    />
+    <meta name="theme-color" content="#f6f8fc" />
+    <title>Momentum Calendar | Student Habit Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="icon" href="assets/app-icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles/app.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+    <script type="module" src="scripts/app.js"></script>
   </head>
   <body>
-    <main class="page-shell">
-      <section class="hero-panel" aria-label="Student portal overview">
-        <div class="brand-row">
-          <div class="brand-mark">SC</div>
-          <span>Student Connect</span>
-        </div>
+    <section class="auth-screen" id="authScreen" aria-labelledby="authTitle">
+      <div class="auth-card">
+        <a class="brand auth-brand" href="#" aria-label="Momentum Calendar home">
+          <img src="assets/app-icon.svg" alt="" />
+          <span>
+            <strong>Momentum</strong>
+            <small>Student habit calendar</small>
+          </span>
+        </a>
 
-        <div class="hero-copy">
-          <p class="eyebrow">Student portal</p>
-          <h1>Secure access for every student.</h1>
+        <div class="auth-copy">
+          <p class="eyebrow">Supabase Auth</p>
+          <h1 id="authTitle">Sign in to sync your habits.</h1>
           <p>
-            Create an account, login from anywhere, and manage a simple
-            student dashboard powered by hosted authentication.
+            Use your Google account to keep your calendar, completions, and
+            streaks protected in your Supabase project.
           </p>
         </div>
 
-        <div class="stats-grid" aria-label="Student highlights">
-          <div>
-            <span>Access</span>
-            <strong>Public signup</strong>
-          </div>
-          <div>
-            <span>Security</span>
-            <strong>Email auth</strong>
-          </div>
-          <div>
-            <span>Status</span>
-            <strong id="authBadge">Loading</strong>
-          </div>
-        </div>
-      </section>
+        <button class="google-button" id="googleSignIn" type="button">
+          <i data-lucide="log-in" aria-hidden="true"></i>
+          <span>Continue with Google</span>
+        </button>
 
-      <section class="auth-panel" aria-live="polite">
-        <div class="card-top">
-          <div>
-            <p class="eyebrow" id="modeLabel">Create account</p>
-            <h2 id="formTitle">Student Signup</h2>
-          </div>
-          <button class="mode-chip" id="modeToggle" type="button">Login</button>
-        </div>
+        <p class="auth-message" id="authMessage" role="alert"></p>
+      </div>
+    </section>
 
-        <div class="notice" id="authNotice">
-          <strong>Public student access.</strong>
-          Any student can create an account using email and password.
-        </div>
+    <div class="app-shell" id="appShell" aria-hidden="true">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Momentum Calendar home">
+          <img src="assets/app-icon.svg" alt="" />
+          <span>
+            <strong>Momentum</strong>
+            <small>Student habit calendar</small>
+          </span>
+        </a>
 
-        <form id="studentForm" novalidate>
-          <div class="signup-fields">
-            <label>
-              Full name
-              <input
-                id="name"
-                name="name"
-                type="text"
-                autocomplete="name"
-                placeholder="Enter full name"
-              />
-            </label>
-
-            <label>
-              Roll number
-              <input
-                id="roll"
-                name="roll"
-                type="text"
-                inputmode="numeric"
-                autocomplete="off"
-                placeholder="Enter roll number"
-              />
-            </label>
-
-            <label>
-              Course
-              <input
-                id="course"
-                name="course"
-                type="text"
-                autocomplete="organization-title"
-                placeholder="BSc Computer Science"
-              />
-            </label>
-          </div>
-
-          <label>
-            Email address
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autocomplete="email"
-              placeholder="student@example.com"
-              required
-            />
+        <div class="topbar-actions" aria-label="App actions">
+          <label class="search-box" for="searchHabits">
+            <i data-lucide="search" aria-hidden="true"></i>
+            <input id="searchHabits" type="search" placeholder="Search habits" />
           </label>
 
-          <label>
-            Password
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              placeholder="Create or enter password"
-              required
-            />
-          </label>
+          <select id="habitFilter" aria-label="Filter habits">
+            <option value="all">All habits</option>
+            <option value="completed">Completed selected day</option>
+            <option value="pending">Pending selected day</option>
+            <option value="streak">On streak</option>
+          </select>
 
-          <div class="form-tools">
-            <label class="remember-row">
-              <input id="remember" type="checkbox" checked />
-              Keep me signed in
-            </label>
-            <button class="link-button" id="forgotPassword" type="button" hidden>
-              Forgot password?
+          <button class="icon-button" id="themeToggle" type="button" aria-label="Toggle theme">
+            <i data-lucide="moon" aria-hidden="true"></i>
+          </button>
+
+          <input id="importFile" type="file" accept="application/json" hidden />
+          <button class="action-button" id="importButton" type="button">
+            <i data-lucide="upload" aria-hidden="true"></i>
+            <span>Import</span>
+          </button>
+          <button class="action-button primary" id="exportButton" type="button">
+            <i data-lucide="download" aria-hidden="true"></i>
+            <span>Export</span>
+          </button>
+
+          <div class="user-area">
+            <div class="user-chip" id="userChip">
+              <img id="userAvatar" src="assets/app-icon.svg" alt="" />
+              <span>
+                <strong id="userName">Student</strong>
+                <small id="userEmail">Signed in</small>
+              </span>
+            </div>
+            <button class="action-button" id="logoutButton" type="button">
+              <i data-lucide="log-out" aria-hidden="true"></i>
+              <span>Logout</span>
             </button>
           </div>
+        </div>
+      </header>
 
-          <p class="message" id="message" role="alert"></p>
-
-          <button class="primary-button" id="submitButton" type="submit">
-            Create verified account
-          </button>
-        </form>
-      </section>
-
-      <section class="dashboard-panel" id="dashboard">
-        <div class="dashboard-header">
-          <div>
-            <p class="eyebrow">Student dashboard</p>
-            <h2>Welcome, <span id="studentName">Student</span></h2>
+      <main>
+        <section class="focus-strip" aria-labelledby="appTitle">
+          <div class="focus-copy">
+            <p class="eyebrow">Supabase habit tracker</p>
+            <h1 id="appTitle">Make every study day visible.</h1>
+            <p id="dailyQuote">
+              Small efforts compound when you can see them.
+            </p>
           </div>
-          <button class="mode-chip" id="logoutButton" type="button">Logout</button>
+
+          <div class="focus-score" aria-label="Productivity score">
+            <div class="score-ring" id="productivityRing" style="--score: 0">
+              <span id="productivityScore">0</span>
+            </div>
+            <div>
+              <strong>Productivity score</strong>
+              <small id="todayLabel">Today</small>
+            </div>
+          </div>
+
+          <img class="study-art" src="assets/study-illustration.svg" alt="" />
+        </section>
+
+        <section class="stats-grid" aria-label="Progress summary">
+          <article class="stat-card">
+            <span>Total completed</span>
+            <strong id="totalCompleted">0</strong>
+            <small>All-time check-ins</small>
+          </article>
+          <article class="stat-card">
+            <span>Completion rate</span>
+            <strong id="completionRate">0%</strong>
+            <small>Across tracked days</small>
+          </article>
+          <article class="stat-card">
+            <span>Current streak</span>
+            <strong id="currentStreak">0 days</strong>
+            <small>Perfect-day chain</small>
+          </article>
+          <article class="stat-card">
+            <span>Longest streak</span>
+            <strong id="longestStreak">0 days</strong>
+            <small>Best run so far</small>
+          </article>
+          <article class="stat-card">
+            <span>Consistency</span>
+            <strong id="consistencyScore">0%</strong>
+            <small>Last 14 days</small>
+          </article>
+          <article class="stat-card">
+            <span>This month</span>
+            <strong id="monthlyRate">0%</strong>
+            <small id="monthlyCompleted">0 completions</small>
+          </article>
+        </section>
+
+        <div class="workspace-grid">
+          <section class="panel calendar-panel" aria-labelledby="calendarTitle">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Interactive calendar</p>
+                <h2 id="calendarTitle">Monthly view</h2>
+              </div>
+              <div class="month-controls">
+                <button class="icon-button" id="prevMonth" type="button" aria-label="Previous month">
+                  <i data-lucide="chevron-left" aria-hidden="true"></i>
+                </button>
+                <strong id="monthTitle">Month</strong>
+                <button class="icon-button" id="nextMonth" type="button" aria-label="Next month">
+                  <i data-lucide="chevron-right" aria-hidden="true"></i>
+                </button>
+                <button class="action-button subtle" id="todayButton" type="button">
+                  <i data-lucide="calendar-check" aria-hidden="true"></i>
+                  <span>Today</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="weekday-row" aria-hidden="true">
+              <span>Sun</span>
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+              <span>Fri</span>
+              <span>Sat</span>
+            </div>
+            <div class="calendar-grid" id="calendarGrid" aria-label="Calendar days"></div>
+          </section>
+
+          <aside class="panel day-panel" aria-labelledby="selectedDateLabel">
+            <div class="section-head compact">
+              <div>
+                <p class="eyebrow">Selected day</p>
+                <h2 id="selectedDateLabel">Today</h2>
+              </div>
+              <div class="day-meter" id="selectedDayMeter" style="--day-score: 0">
+                <span id="selectedDayScore">0%</span>
+              </div>
+            </div>
+
+            <div class="selected-summary">
+              <span id="selectedDayCompleted">0 of 0 habits complete</span>
+              <strong id="selectedDayMood">Ready to start</strong>
+            </div>
+
+            <div class="habit-checklist" id="habitList" aria-live="polite"></div>
+          </aside>
         </div>
 
-        <div class="profile-card">
-          <div class="avatar" id="avatar">ST</div>
-          <div>
-            <h3 id="profileName">Student</h3>
-            <p id="profileEmail">student@example.com</p>
-          </div>
+        <div class="workspace-grid secondary">
+          <section class="panel habit-panel" aria-labelledby="habitFormTitle">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Habit management</p>
+                <h2 id="habitFormTitle">Create a habit</h2>
+              </div>
+              <button class="action-button subtle" id="resetHabitForm" type="button">
+                <i data-lucide="plus" aria-hidden="true"></i>
+                <span>New</span>
+              </button>
+            </div>
+
+            <form class="habit-form" id="habitForm">
+              <input id="habitId" type="hidden" />
+              <label>
+                Habit name
+                <input id="habitName" type="text" maxlength="42" placeholder="e.g. Practice calculus" required />
+              </label>
+              <div class="form-row">
+                <label>
+                  Emoji or icon
+                  <input id="habitIcon" type="text" maxlength="4" placeholder="📚" required />
+                </label>
+                <label>
+                  Color
+                  <input id="habitColor" type="color" value="#2563eb" required />
+                </label>
+              </div>
+              <div class="color-presets" id="colorPresets" aria-label="Quick colors"></div>
+              <button class="action-button primary wide" id="saveHabitButton" type="submit">
+                <i data-lucide="save" aria-hidden="true"></i>
+                <span>Save habit</span>
+              </button>
+            </form>
+
+            <div class="templates">
+              <div class="mini-head">
+                <strong>Student templates</strong>
+                <small>One tap setup</small>
+              </div>
+              <div class="template-grid" id="templateGrid"></div>
+            </div>
+
+            <div class="habit-library" id="habitLibrary"></div>
+          </section>
+
+          <section class="panel analytics-panel" aria-labelledby="analyticsTitle">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Statistics dashboard</p>
+                <h2 id="analyticsTitle">Analytics</h2>
+              </div>
+              <span class="sync-pill">
+                <i data-lucide="database" aria-hidden="true"></i>
+                Supabase
+              </span>
+            </div>
+
+            <div class="analytics-grid">
+              <div class="chart-block">
+                <div class="mini-head">
+                  <strong>Weekly analytics</strong>
+                  <small id="weeklyCompleted">0 completed</small>
+                </div>
+                <div class="weekly-chart" id="weeklyChart"></div>
+              </div>
+
+              <div class="chart-block month-block">
+                <div class="mini-head">
+                  <strong>Monthly analytics</strong>
+                  <small id="monthInsight">No data yet</small>
+                </div>
+                <div class="month-ring" id="monthRing" style="--month-score: 0">
+                  <span id="monthRingLabel">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="heatmap-section">
+              <div class="mini-head">
+                <strong>Contribution heatmap</strong>
+                <small>Completion intensity</small>
+              </div>
+              <div class="heatmap-wrap">
+                <div class="heatmap-grid" id="heatmapGrid"></div>
+              </div>
+              <div class="heatmap-legend" aria-hidden="true">
+                <span>Less</span>
+                <i data-level="0"></i>
+                <i data-level="1"></i>
+                <i data-level="2"></i>
+                <i data-level="3"></i>
+                <i data-level="4"></i>
+                <span>More</span>
+              </div>
+            </div>
+
+            <div class="insight-grid">
+              <div>
+                <div class="mini-head">
+                  <strong>Achievement badges</strong>
+                  <small id="badgeCount">0 unlocked</small>
+                </div>
+                <div class="badge-grid" id="badgeGrid"></div>
+              </div>
+              <div>
+                <div class="mini-head">
+                  <strong>Completion history</strong>
+                  <small>Last 14 days</small>
+                </div>
+                <div class="history-list" id="historyList"></div>
+              </div>
+            </div>
+          </section>
         </div>
 
-        <div class="dashboard-grid">
-          <div>
-            <span>Roll number</span>
-            <strong id="profileRoll">Not added</strong>
+        <section class="panel streak-panel" aria-labelledby="streakTitle">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Streak system</p>
+              <h2 id="streakTitle">Habit streaks and recovery</h2>
+            </div>
           </div>
-          <div>
-            <span>Course</span>
-            <strong id="profileCourse">B.Sc Computer Science</strong>
-          </div>
-          <div>
-            <span>Account status</span>
-            <strong class="success">Active</strong>
-          </div>
-          <div>
-            <span>Next step</span>
-            <strong>Profile active</strong>
-          </div>
-        </div>
-      </section>
-    </main>
+          <div class="streak-grid" id="streakGrid"></div>
+        </section>
+      </main>
+    </div>
 
-    <script type="module" src="app.js"></script>
+    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+    <div class="loading-overlay" id="loadingOverlay" aria-live="polite" aria-hidden="true">
+      <div>
+        <span class="loader"></span>
+        <strong id="loadingText">Syncing Supabase</strong>
+      </div>
+    </div>
+    <div class="confetti-root" id="confettiRoot" aria-hidden="true"></div>
   </body>
 </html>

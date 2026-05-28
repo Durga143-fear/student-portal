@@ -1,6 +1,21 @@
 {
-  "name": "student-connect-portal",
+  "name": "momentum-student-habit-calendar",
   "version": "1.0.0",
   "private": true,
-  "description": "Static student signup and login portal with Supabase Auth support."
+  "type": "module",
+  "description": "Supabase-powered student habit tracker calendar built with HTML, CSS, and JavaScript.",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.86.0"
+  },
+  "devDependencies": {
+    "vite": "^7.2.7"
+  }
 }
