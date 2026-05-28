@@ -16,8 +16,8 @@ if (typeof document !== "undefined") {
     const studentName = document.getElementById("studentName");
     const profileName = document.getElementById("profileName");
     const profileEmail = document.getElementById("profileEmail");
-    const profileRoll = document.getElementById("profileRoll");
-    const profileCourse = document.getElementById("profileCourse");
+    const profileCreatedAt = document.getElementById("profileCreatedAt");
+    const profileProvider = document.getElementById("profileProvider");
     const avatar = document.getElementById("avatar");
 
     if (
@@ -35,22 +35,19 @@ if (typeof document !== "undefined") {
       !studentName ||
       !profileName ||
       !profileEmail ||
-      !profileRoll ||
-      !profileCourse ||
+      !profileCreatedAt ||
+      !profileProvider ||
       !avatar
     ) {
       console.error("Student portal markup is missing one or more required elements.");
       return;
     }
 
-    const DEMO_USERS_KEY = "student_connect_demo_users";
-    const DEMO_SESSION_KEY = "student_connect_demo_session";
-    const DEFAULT_COURSE = "B.Sc Computer Science";
     const STUDENTS_TABLE = "students";
+    const STUDENT_COLUMNS = "id, email, full_name, created_at";
 
     let mode = "signup";
     let client = null;
-    let usingSupabase = false;
 
     function isConfigured(value) {
       return Boolean(value && !value.includes("YOUR_") && !value.includes("PROJECT_REF"));
@@ -60,54 +57,22 @@ if (typeof document !== "undefined") {
       return email.trim().toLowerCase();
     }
 
-    function safeRandomId() {
-      if (globalThis.crypto?.randomUUID) {
-        return globalThis.crypto.randomUUID();
-      }
-
-      return `student-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    function setMessage(text, isOk = false) {
+      message.textContent = text;
+      message.classList.toggle("ok", isOk);
     }
 
-    function readStorage(key, fallback = null) {
-      try {
-        return localStorage.getItem(key) ?? fallback;
-      } catch (error) {
-        console.warn("Browser storage is unavailable.", error);
-        return fallback;
-      }
+    function setLoading(isLoading) {
+      submitButton.disabled = isLoading || !client;
+      submitButton.textContent = isLoading
+        ? "Please wait..."
+        : mode === "signup"
+          ? "Create account"
+          : "Login to dashboard";
     }
 
-    function writeStorage(key, value) {
-      try {
-        localStorage.setItem(key, value);
-      } catch (error) {
-        console.warn("Browser storage is unavailable.", error);
-      }
-    }
-
-    function removeStorage(key) {
-      try {
-        localStorage.removeItem(key);
-      } catch (error) {
-        console.warn("Browser storage is unavailable.", error);
-      }
-    }
-
-    function readJsonStorage(key, fallback) {
-      try {
-        return JSON.parse(readStorage(key, JSON.stringify(fallback)));
-      } catch (error) {
-        console.warn("Stored data could not be read.", error);
-        return fallback;
-      }
-    }
-
-    function writeJsonStorage(key, value) {
-      writeStorage(key, JSON.stringify(value));
-    }
-
-    function getInitials(name = "") {
-      const cleanName = name.trim();
+    function getInitials(fullName = "") {
+      const cleanName = fullName.trim();
       if (!cleanName) return "ST";
 
       return cleanName
@@ -118,38 +83,29 @@ if (typeof document !== "undefined") {
         .toUpperCase();
     }
 
-    function getDemoUsers() {
-      return readJsonStorage(DEMO_USERS_KEY, {});
-    }
+    function formatCreatedAt(value) {
+      if (!value) return "Just now";
 
-    function saveDemoUsers(users) {
-      writeJsonStorage(DEMO_USERS_KEY, users);
-    }
+      const createdAt = new Date(value);
+      if (Number.isNaN(createdAt.getTime())) return "Just now";
 
-    function setMessage(text, isOk = false) {
-      message.textContent = text;
-      message.classList.toggle("ok", isOk);
-    }
-
-    function setLoading(isLoading) {
-      submitButton.disabled = isLoading;
-      submitButton.textContent = isLoading
-        ? "Please wait..."
-        : mode === "signup"
-          ? "Create account"
-          : "Login to dashboard";
+      return createdAt.toLocaleDateString(undefined, {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
     }
 
     function fallbackProfile(user) {
       const metadata = user?.user_metadata || {};
-      const email = user?.email || metadata.email || "";
+      const email = user?.email || "";
+      const fullName = metadata.full_name || email.split("@")[0] || "Student";
 
       return {
-        id: user?.id || metadata.id || safeRandomId(),
-        name: metadata.full_name || metadata.name || email.split("@")[0] || "Student",
+        id: user?.id || "",
         email,
-        roll: metadata.roll || metadata.roll_number || "Not added",
-        course: metadata.course || DEFAULT_COURSE,
+        fullName,
+        createdAt: user?.created_at || null,
       };
     }
 
@@ -158,25 +114,22 @@ if (typeof document !== "undefined") {
 
       return {
         id: row?.id || fallback.id,
-        name: row?.full_name || fallback.name,
         email: row?.email || fallback.email,
-        roll: row?.roll_number || fallback.roll,
-        course: row?.course || fallback.course,
+        fullName: row?.full_name || fallback.fullName,
+        createdAt: row?.created_at || fallback.createdAt,
       };
     }
 
     function formData() {
       return {
-        name: form.elements.name.value.trim(),
-        roll: form.elements.roll.value.trim(),
-        course: form.elements.course.value.trim() || DEFAULT_COURSE,
+        fullName: form.elements.full_name.value.trim(),
         email: normalizeEmail(form.elements.email.value),
         password: form.elements.password.value,
       };
     }
 
     function validate(data) {
-      if (mode === "signup" && data.name.length < 2) {
+      if (mode === "signup" && data.fullName.length < 2) {
         return "Please enter the student's full name.";
       }
 
@@ -192,11 +145,11 @@ if (typeof document !== "undefined") {
     }
 
     function tableSetupMessage() {
-      return "Students table is not ready. Run supabase-schema.sql in the Supabase SQL editor, then try again.";
+      return "The students table must use only these columns: id, email, full_name, created_at.";
     }
 
-    function isMissingTableError(error) {
-      return ["42P01", "PGRST205", "PGRST116"].includes(error?.code);
+    function isStudentsTableError(error) {
+      return ["42P01", "42703", "PGRST204", "PGRST205"].includes(error?.code);
     }
 
     function renderMode() {
@@ -204,35 +157,35 @@ if (typeof document !== "undefined") {
       modeLabel.textContent = isSignup ? "Create account" : "Welcome back";
       formTitle.textContent = isSignup ? "Student Signup" : "Student Login";
       modeToggle.textContent = isSignup ? "Login" : "Signup";
-      submitButton.textContent = isSignup ? "Create account" : "Login to dashboard";
       signupFields.hidden = !isSignup;
-      forgotPassword.hidden = isSignup || !usingSupabase;
+      forgotPassword.hidden = isSignup || !client;
       form.elements.password.autocomplete = isSignup ? "new-password" : "current-password";
+      setLoading(false);
       setMessage("");
     }
 
     function renderAuthState() {
-      const provider = usingSupabase ? "Supabase Auth" : "Local preview";
-      authBadge.textContent = provider;
-
-      if (usingSupabase) {
+      if (client) {
+        authBadge.textContent = "Supabase Auth";
         notice.innerHTML =
-          "<strong>Public student access.</strong> Any student can create an account. Profile data is saved in Supabase.";
+          "<strong>Supabase Auth enabled.</strong> Student profiles use only <code>id</code>, <code>email</code>, <code>full_name</code>, and <code>created_at</code>.";
         return;
       }
 
+      authBadge.textContent = "Supabase unavailable";
       notice.innerHTML =
-        "<strong>Preview mode.</strong> Add your Supabase URL and anon key in <code>auth-config.js</code> to enable real hosted authentication.";
+        "<strong>Supabase is required.</strong> Add your Supabase URL and publishable key in <code>auth-config.js</code>.";
+      setMessage("Supabase is not configured, so signup and login are disabled.");
     }
 
     function showDashboard(student) {
       document.body.classList.add("signed-in");
-      studentName.textContent = student.name;
-      profileName.textContent = student.name;
+      studentName.textContent = student.fullName;
+      profileName.textContent = student.fullName;
       profileEmail.textContent = student.email;
-      profileRoll.textContent = student.roll;
-      profileCourse.textContent = student.course;
-      avatar.textContent = getInitials(student.name);
+      profileCreatedAt.textContent = formatCreatedAt(student.createdAt);
+      profileProvider.textContent = "Supabase Auth";
+      avatar.textContent = getInitials(student.fullName);
     }
 
     function showAuth() {
@@ -261,151 +214,116 @@ if (typeof document !== "undefined") {
       });
     }
 
+    function throwStudentsTableError(error) {
+      if (isStudentsTableError(error)) {
+        throw new Error(tableSetupMessage());
+      }
+
+      throw error;
+    }
+
     async function fetchStudentProfile(user) {
       const { data, error } = await client
         .from(STUDENTS_TABLE)
-        .select("id, full_name, email, roll_number, course")
+        .select(STUDENT_COLUMNS)
         .eq("id", user.id)
         .maybeSingle();
 
-      if (error) {
-        if (isMissingTableError(error)) throw new Error(tableSetupMessage());
-        throw error;
-      }
+      if (error) throwStudentsTableError(error);
 
       return data ? tableProfile(data, user) : null;
     }
 
-    async function verifyStudentsTableExists() {
-      const { error } = await client.from(STUDENTS_TABLE).select("id").limit(1);
-
-      if (error && isMissingTableError(error)) {
-        throw new Error(tableSetupMessage());
-      }
-    }
-
-    async function saveStudentProfile(user, profile) {
+    async function saveStudentProfile(user) {
+      const fallback = fallbackProfile(user);
       const row = {
         id: user.id,
-        full_name: profile.name,
-        email: user.email || profile.email,
-        roll_number: profile.roll || "Not added",
-        course: profile.course || DEFAULT_COURSE,
+        email: fallback.email,
+        full_name: fallback.fullName,
       };
 
-      const { error } = await client.from(STUDENTS_TABLE).upsert(row, { onConflict: "id" });
+      const { data, error } = await client
+        .from(STUDENTS_TABLE)
+        .upsert(row, { onConflict: "id" })
+        .select(STUDENT_COLUMNS)
+        .single();
 
-      if (error) {
-        if (isMissingTableError(error)) throw new Error(tableSetupMessage());
-        throw error;
-      }
+      if (error) throwStudentsTableError(error);
 
-      return tableProfile(row, user);
+      return tableProfile(data || row, user);
     }
 
     async function ensureStudentProfile(user) {
       const existingProfile = await fetchStudentProfile(user);
       if (existingProfile) return existingProfile;
 
-      return saveStudentProfile(user, fallbackProfile(user));
+      return saveStudentProfile(user);
     }
 
     async function getCurrentUser() {
-      if (usingSupabase) {
-        const { data } = await client.auth.getUser();
-        return data.user;
+      if (!client) return null;
+
+      const { data, error } = await client.auth.getUser();
+      if (error && !error.message?.toLowerCase().includes("auth session missing")) {
+        throw error;
       }
 
-      return readJsonStorage(DEMO_SESSION_KEY, null);
+      return data.user || null;
     }
 
     async function signUp(data) {
-      if (usingSupabase) {
-        await verifyStudentsTableExists();
+      if (!client) {
+        throw new Error("Supabase is required for signup.");
+      }
 
-        const result = await client.auth.signUp({
-          email: data.email,
-          password: data.password,
-          options: {
-            data: {
-              full_name: data.name,
-              roll_number: data.roll || "Not added",
-              course: data.course,
-            },
+      const result = await client.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.fullName,
           },
-        });
+        },
+      });
 
-        if (result.error) throw result.error;
+      if (result.error) throw result.error;
 
-        if (!result.data.session) {
-          mode = "login";
-          renderMode();
-          setMessage("Account created. Please check your email to confirm before logging in.", true);
-          return;
-        }
+      if (!result.data.user) {
+        throw new Error("Supabase did not return a user for this signup.");
+      }
 
-        const profile = await saveStudentProfile(result.data.user, {
-          name: data.name,
-          email: data.email,
-          roll: data.roll || "Not added",
-          course: data.course,
-        });
-
-        showDashboard(profile);
+      if (!result.data.session) {
+        mode = "login";
+        renderMode();
+        setMessage("Account created. Please check your email to confirm before logging in.", true);
         return;
       }
 
-      const users = getDemoUsers();
-      if (users[data.email]) {
-        throw new Error("This email already has an account. Please login instead.");
-      }
-
-      const user = {
-        id: safeRandomId(),
-        email: data.email,
-        password: data.password,
-        user_metadata: {
-          full_name: data.name,
-          roll_number: data.roll || "Not added",
-          course: data.course,
-        },
-      };
-
-      users[data.email] = user;
-      saveDemoUsers(users);
-      writeJsonStorage(DEMO_SESSION_KEY, user);
-      showDashboard(fallbackProfile(user));
+      const profile = await saveStudentProfile(result.data.user);
+      showDashboard(profile);
     }
 
     async function login(data) {
-      if (usingSupabase) {
-        const { data: sessionData, error } = await client.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        });
-
-        if (error) throw error;
-
-        const profile = await ensureStudentProfile(sessionData.user);
-        showDashboard(profile);
-        return;
+      if (!client) {
+        throw new Error("Supabase is required for login.");
       }
 
-      const user = getDemoUsers()[data.email];
-      if (!user || user.password !== data.password) {
-        throw new Error("Email or password is incorrect.");
-      }
+      const { data: sessionData, error } = await client.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
 
-      writeJsonStorage(DEMO_SESSION_KEY, user);
-      showDashboard(fallbackProfile(user));
+      if (error) throw error;
+
+      const profile = await ensureStudentProfile(sessionData.user);
+      showDashboard(profile);
     }
 
     async function logout() {
-      if (usingSupabase) {
+      if (client) {
         await client.auth.signOut();
       }
 
-      removeStorage(DEMO_SESSION_KEY);
       mode = "login";
       renderMode();
       showAuth();
@@ -444,7 +362,7 @@ if (typeof document !== "undefined") {
     forgotPassword.addEventListener("click", async () => {
       const email = normalizeEmail(form.elements.email.value);
 
-      if (!usingSupabase) {
+      if (!client) {
         setMessage("Password reset is available after Supabase is configured.");
         return;
       }
@@ -463,9 +381,8 @@ if (typeof document !== "undefined") {
     async function init() {
       try {
         client = createSupabaseClient();
-        usingSupabase = Boolean(client);
       } catch (error) {
-        console.warn("Supabase could not be initialized. Preview mode is active.", error);
+        console.warn("Supabase could not be initialized.", error);
       }
 
       renderAuthState();
@@ -474,16 +391,19 @@ if (typeof document !== "undefined") {
       try {
         const user = await getCurrentUser();
         if (user) {
-          const profile = usingSupabase ? await ensureStudentProfile(user) : fallbackProfile(user);
+          const profile = await ensureStudentProfile(user);
           showDashboard(profile);
         }
       } catch (error) {
         setMessage(error.message || "Could not load the student profile.");
       }
 
-      if (usingSupabase) {
-        client.auth.onAuthStateChange(async (_event, session) => {
-          if (!session?.user) return;
+      if (client) {
+        client.auth.onAuthStateChange(async (event, session) => {
+          if (event === "SIGNED_OUT" || !session?.user) {
+            showAuth();
+            return;
+          }
 
           try {
             const profile = await ensureStudentProfile(session.user);

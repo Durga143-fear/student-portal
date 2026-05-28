@@ -10,7 +10,7 @@ npx serve . --listen 5180
 
 Open `http://localhost:5180`.
 
-The app is a frontend-only static site configured for Supabase. If the Supabase keys are removed, it falls back to local preview mode so the UI can still be tested on this computer.
+The app is a frontend-only static site configured for Supabase Auth. Signup and login require Supabase credentials in `auth-config.js`.
 
 ## Enable Supabase Auth
 
@@ -41,6 +41,7 @@ The table setup lives in `supabase-schema.sql`.
 It creates:
 
 - `public.students`
+- the columns `id`, `email`, `full_name`, and `created_at`
 - private per-user row-level security policies
 - an auth trigger that creates a student profile when a new user signs up
 

@@ -65,34 +65,11 @@
             <label>
               Full name
               <input
-                id="name"
-                name="name"
+                id="full_name"
+                name="full_name"
                 type="text"
                 autocomplete="name"
                 placeholder="Enter full name"
-              />
-            </label>
-
-            <label>
-              Roll number
-              <input
-                id="roll"
-                name="roll"
-                type="text"
-                inputmode="numeric"
-                autocomplete="off"
-                placeholder="Enter roll number"
-              />
-            </label>
-
-            <label>
-              Course
-              <input
-                id="course"
-                name="course"
-                type="text"
-                autocomplete="organization-title"
-                placeholder="BSc Computer Science"
               />
             </label>
           </div>
@@ -158,20 +135,20 @@
 
         <div class="dashboard-grid">
           <div>
-            <span>Roll number</span>
-            <strong id="profileRoll">Not added</strong>
+            <span>Member since</span>
+            <strong id="profileCreatedAt">Just now</strong>
           </div>
           <div>
-            <span>Course</span>
-            <strong id="profileCourse">B.Sc Computer Science</strong>
+            <span>Auth provider</span>
+            <strong id="profileProvider">Supabase Auth</strong>
           </div>
           <div>
             <span>Account status</span>
             <strong class="success">Active</strong>
           </div>
           <div>
-            <span>Next step</span>
-            <strong>Profile active</strong>
+            <span>Profile sync</span>
+            <strong>Saved</strong>
           </div>
         </div>
       </section>
