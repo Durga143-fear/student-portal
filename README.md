@@ -57,8 +57,10 @@ Upload this folder or connect it to a GitHub repo. The included `netlify.toml` p
 Import the folder or GitHub repo and use these settings:
 
 - Framework Preset: Other
-- Build Command: `npm run build`
+- Build Command: leave blank
 - Output Directory: `.`
+
+The included `vercel.json` also sets `buildCommand` to `null` and `outputDirectory` to `.` so Vercel treats this as a static frontend and does not invoke a Node server or serverless function.
 
 ### Firebase Hosting
 
