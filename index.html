@@ -59,10 +59,37 @@
           </span>
         </a>
 
+<<<<<<< HEAD
         <div class="topbar-actions" aria-label="App actions">
           <label class="search-box" for="searchHabits">
             <i data-lucide="search" aria-hidden="true"></i>
             <input id="searchHabits" type="search" placeholder="Search habits" />
+=======
+        <form id="studentForm" novalidate>
+          <div class="signup-fields">
+            <label>
+              Full name
+              <input
+                id="full_name"
+                name="full_name"
+                type="text"
+                autocomplete="name"
+                placeholder="Enter full name"
+              />
+            </label>
+          </div>
+
+          <label>
+            Email address
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              placeholder="student@example.com"
+              required
+            />
+>>>>>>> 4a0bba7be0b971d62af01a70d4b1a5fd1b52f468
           </label>
 
           <select id="habitFilter" aria-label="Filter habits">
@@ -329,6 +356,7 @@
           </section>
         </div>
 
+<<<<<<< HEAD
         <section class="panel streak-panel" aria-labelledby="streakTitle">
           <div class="section-head">
             <div>
@@ -340,6 +368,28 @@
         </section>
       </main>
     </div>
+=======
+        <div class="dashboard-grid">
+          <div>
+            <span>Member since</span>
+            <strong id="profileCreatedAt">Just now</strong>
+          </div>
+          <div>
+            <span>Auth provider</span>
+            <strong id="profileProvider">Supabase Auth</strong>
+          </div>
+          <div>
+            <span>Account status</span>
+            <strong class="success">Active</strong>
+          </div>
+          <div>
+            <span>Profile sync</span>
+            <strong>Saved</strong>
+          </div>
+        </div>
+      </section>
+    </main>
+>>>>>>> 4a0bba7be0b971d62af01a70d4b1a5fd1b52f468
 
     <div class="toast-stack" id="toastStack" aria-live="polite"></div>
     <div class="loading-overlay" id="loadingOverlay" aria-live="polite" aria-hidden="true">

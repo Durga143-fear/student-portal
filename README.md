@@ -21,7 +21,11 @@ SUPABASE_ANON_KEY=your-supabase-anon-key
 
 The same variables must be configured in Vercel for Production, Preview, and Development environments.
 
+<<<<<<< HEAD
 Never use a `service_role` key in this frontend app.
+=======
+The app is a frontend-only static site configured for Supabase Auth. Signup and login require Supabase credentials in `auth-config.js`.
+>>>>>>> 4a0bba7be0b971d62af01a70d4b1a5fd1b52f468
 
 ## Supabase Tables
 
@@ -49,7 +53,42 @@ All frontend queries are scoped with `user_id = auth.user.id`. RLS policies shou
 
 Because the current `habits` table does not include a separate icon column, the app stores the selected emoji at the start of `title` and parses it back into the existing UI.
 
+<<<<<<< HEAD
 ## Local Development
+=======
+After this, every student can create an account with their own email and password. The `students` table uses row-level security, so signed-in students only access their own profile.
+
+## Students Table
+
+The table setup lives in `supabase-schema.sql`.
+
+It creates:
+
+- `public.students`
+- the columns `id`, `email`, `full_name`, and `created_at`
+- private per-user row-level security policies
+- an auth trigger that creates a student profile when a new user signs up
+
+## Deploy Frontend
+
+This project is static, so it can be deployed to Netlify, Vercel, Firebase Hosting, or GitHub Pages.
+
+### Netlify
+
+Upload this folder or connect it to a GitHub repo. The included `netlify.toml` publishes the current folder.
+
+### Vercel
+
+Import the folder or GitHub repo and use these settings:
+
+- Framework Preset: Other
+- Build Command: leave blank
+- Output Directory: `.`
+
+The included `vercel.json` also sets `buildCommand` to `null` and `outputDirectory` to `.` so Vercel treats this as a static frontend and does not invoke a Node server or serverless function.
+
+### Firebase Hosting
+>>>>>>> 4a0bba7be0b971d62af01a70d4b1a5fd1b52f468
 
 ```bash
 npm install
